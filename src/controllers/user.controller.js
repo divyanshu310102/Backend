@@ -24,8 +24,6 @@ const generateAccessAndRefreshTokens = async(userId) =>{
     }
 }
 
-
-
 const registerUser = asyncHandler(async (req, res) => {
     //get user details from frontend
     //validation -not empty
@@ -150,7 +148,7 @@ const loginUser = asyncHandler(async (req, res) =>{
 
     const options = {
         httpOnly: true,
-        secure : true
+        secure : false
     }
 
     res
@@ -162,13 +160,17 @@ const loginUser = asyncHandler(async (req, res) =>{
         refreshToken
     }, "User logged in successfully"))
 
+    // console.log(req.cookies)
+
     
 })
 
 
+
+
 const logOutUser = asyncHandler(async(req, res) => {
     
-    await User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
 
         req.user._id,
 
@@ -183,9 +185,11 @@ const logOutUser = asyncHandler(async(req, res) => {
         }
     )
 
+    // console.log(user)
+
     const options = {
         httpOnly: true,
-        secure : true
+        secure : false
     }
 
     return res
@@ -242,14 +246,20 @@ const refreshAccessToken = asyncHandler(async(req,res) =>{
 })
 
 const changeCurrentPassword = asyncHandler(async(req,res) => {
-    const {oldPassword,newPassword, confPassword} = req.body
+    const {oldPassword,newPassword} = req.body
+    // console.log(oldPassword,newPassword)
 
-    if(!(oldPassword === confPassword)){
-        throw new ApiError(401, "Passwords do not match")
+    // if(!(oldPassword === confPassword)){
+    //     throw new ApiError(401, "Passwords do not match")
 
-    }
+    // }
+    
 
     const user = User.findById(req.user?._id)
+
+    // console.log(user)
+    
+    
     const isPasswordValid = await user.generateAuthToken(oldPassword)
     if(!isPasswordValid){
         throw new ApiError(401, "Invalid credentials")
@@ -275,9 +285,12 @@ const getCurrentUser = asyncHandler(async(req,res) => {
 })
 
 const updataProfileFields = asyncHandler(async(req,res) => {
+    // console.log(req.body)
     const {fullname, email} = req.body
+    // console.log(fullname,email)
+    
 
-    await User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {fullname, email}
@@ -287,16 +300,21 @@ const updataProfileFields = asyncHandler(async(req,res) => {
         }
     ).select("-password")
 
+    
+
     return res
     .status(200)
     .json(
-        new ApiResponse(200, req.user, "Profile fields updated successfully")
+        new ApiResponse(200, user, "Profile fields updated successfully")
     )
  
 });
 
 const updateUserAvatar = asyncHandler(async(req,res) => {
-    const avatarLocalPath = req.file?.avatar[0]?.path
+    // console.log(req.file.path)
+    const avatarLocalPath = req.file.path
+    // console.log(avatarLocalPath)
+    
 
     if(!avatarLocalPath){
         throw new ApiError(400, "Avatar file is required")

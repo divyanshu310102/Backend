@@ -10,7 +10,10 @@ export const verifyJWT = asyncHandler(async(req,res,next) => {
     //if valid, attach user to req.user
     //else throw error
     try {
+        // console.log(req.cookies)
+        // console.log("Entered in verifyJWT")
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","")
+        // console.log("token:",token)
         if(!token) {
             throw new Error(401,"Not authorized, token required")
         }
@@ -23,8 +26,11 @@ export const verifyJWT = asyncHandler(async(req,res,next) => {
         }
     
         req.user = user;
+
+        // console.log(req.user)
         next()
     } catch (error) {
+        // console.log("Entered in catch")
         throw new ApiError(401, error?.message || "Invalid Access Token")
         
     }
